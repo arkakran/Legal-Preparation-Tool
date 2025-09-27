@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="upload-section">
+    <div class="info-grid">
+        <div class="info-card">
+            <h3> AI-Powered Analysis</h3>
+            <ul>
+                <li>Rule-based legal cues</li>
+                <li>TF-IDF paragraph ranking</li>
+                <li>LLM extraction & structuring</li>
+            </ul>
+        </div>
+        <div class="info-card">
+            <h3> Comprehensive Results</h3>
+            <ul>
+                <li>Top 10 key items</li>
+                <li>For / Against target</li>
+                <li>Citations & Scoring</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="upload-form-container">
+        <h2>Upload Legal PDF Document</h2>
+        
+        {% if groq_configured %}
+            <div class="status-indicator status-ok">
+                 LLM Active
+            </div>
+        {% else %}
+            <div class="status-indicator status-error">
+                 GROQ_API_KEY not configured
+            </div>
+        {% endif %}
+        
+        <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" class="upload-form">
+            <div class="file-input-wrapper">
+                <input type="file" name="file" id="file" accept=".pdf" required>
+                <label for="file" class="file-label">
+                    📁 Choose PDF File
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary" {% if not groq_configured %}disabled{% endif %}>
+                 Analyze Document
+            </button>
+        </form>
+        
+    </div>
+</div>
+{% endblock %}

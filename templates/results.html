@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Results - Legal Preparation Tool{% endblock %}
+
+{% block content %}
+<div class="results-container">
+    <div class="success-indicator">
+        <h2> Analysis Complete!</h2>
+        <span class="badge">LLM active</span>
+    </div>
+    
+    <div class="metrics-grid">
+        {% set supporting = results.key_items|selectattr("stance", "equalto", "for")|list|length %}
+        {% set opposing = results.key_items|selectattr("stance", "equalto", "against")|list|length %}
+        {% set neutral = results.key_items|selectattr("stance", "equalto", "neutral")|list|length %}
+        {% set avg_conf = (results.key_items|sum(attribute='confidence_score') / results.key_items|length * 100)|round(1) %}
+        
+        <div class="metric-card">
+            <h3 style="color:#28a745;">{{ supporting }}</h3>
+            <p> Supporting</p>
+        </div>
+        <div class="metric-card">
+            <h3 style="color:#dc3545;">{{ opposing }}</h3>
+            <p> Opposing</p>
+        </div>
+        <div class="metric-card">
+            <h3 style="color:#6c757d;">{{ neutral }}</h3>
+            <p> Neutral</p>
+        </div>
+        <div class="metric-card">
+            <h3 style="color:#17a2b8;">{{ avg_conf }}%</h3>
+            <p> Avg. Confidence</p>
+        </div>
+    </div>
+    
+    <div class="processing-info">
+        <strong> Document:</strong> {{ results.document_title }} |
+        <strong> Pages:</strong> {{ results.total_pages }} |
+        <strong> Processing Time:</strong> {{ "%.2f"|format(results.processing_time) }}s
+    </div>
+    
+    <hr>
+    
+    <h2> Top 10 Key Legal Items</h2>
+    
+    <div class="key-items">
+        {% for item in results.key_items %}
+        <div class="key-item-card stance-{{ item.stance }}">
+            <h4>{{ loop.index }}. {{ item.title }}</h4>
+            <p class="item-meta">
+                <strong>
+                    {% if item.stance == "for" %} Supporting{% endif %}
+                    {% if item.stance == "against" %} Opposing{% endif %}
+                    {% if item.stance == "neutral" %} Neutral{% endif %}
+                </strong> | 
+                <strong> {{ (item.confidence_score * 100)|round(0)|int }}% Confidence</strong> | 
+                <strong> {{ item.category.replace('_', ' ').title() }}</strong>
+            </p>
+            <div class="confidence-bar">
+                <div class="confidence-fill" style="width:{{ (item.confidence_score * 100)|round(0)|int }}%"></div>
+            </div>
+            <p class="item-content">{{ item.content }}</p>
+            <small class="item-location">
+                 <strong>Page:</strong> {{ item.page_number }} |
+                 <strong>Line:</strong> {{ item.line_start }}{% if item.line_end != item.line_start %} - {{ item.line_end }}{% endif %}
+            </small>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">📁 Analyze Another Document</a>
+    </div>
+</div>
+{% endblock %}
